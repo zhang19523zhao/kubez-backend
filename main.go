@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/wonderivan/logger"
 	"kubez-backend/config"
 	"kubez-backend/controller"
-	"log"
+	"kubez-backend/service"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,6 +16,8 @@ import (
 func main() {
 	// 初始化gin 对象
 	r := gin.Default()
+	// 初始化k8 sclientset
+	service.K8s.Init()
 	// 初始化路由
 	controller.Router.InintApiRouter(r)
 	// 启动gin server
@@ -24,7 +27,7 @@ func main() {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			logger.Fatal("listen: ", err)
 		}
 	}()
 	// 优雅关闭
@@ -38,7 +41,7 @@ func main() {
 	defer cancel()
 	// 关闭gin
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Gin Server 关闭异常: ", err)
+		logger.Fatal("Gin Server 关闭异常: ", err)
 	}
-
+	logger.Info("Gin Server退出成功")
 }
